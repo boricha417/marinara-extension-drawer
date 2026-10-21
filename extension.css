@@ -1,0 +1,327 @@
+/* ===== 확장 서랍 · 에디토리얼 미니멀 (웜 모노크롬 + 파스텔 포인트) ===== */
+
+#exd-panel-root, .exd-fab, .exd-topbar-btn, .exd-toast, .exd-pick-hint {
+  --exd-canvas: #FBFBFA;
+  --exd-card: #FFFFFF;
+  --exd-ink: #2F3437;
+  --exd-muted: #787774;
+  --exd-line: #EAEAEA;
+  --exd-line-soft: rgba(0, 0, 0, 0.06);
+  --exd-hover: #F4F3F0;
+  --exd-alarm-bg: #FDEBEC;
+  --exd-alarm-ink: #9F2F2D;
+  --exd-tag-auto-bg: #E1F3FE;
+  --exd-tag-auto-ink: #1F6C9F;
+  --exd-tag-rule-bg: #FBF3DB;
+  --exd-tag-rule-ink: #956400;
+  --exd-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --exd-shadow-float: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.08);
+  --exd-serif: "Newsreader", "Instrument Serif", Georgia, "Noto Serif KR", serif;
+  --exd-sans: var(--font-user, -apple-system, "Helvetica Neue", "Pretendard", system-ui, sans-serif);
+  --exd-mono: "Geist Mono", "SF Mono", "JetBrains Mono", Consolas, monospace;
+  box-sizing: border-box;
+  font-family: var(--exd-sans);
+  color: var(--exd-ink);
+}
+#exd-panel-root *, #exd-panel-root *::before, #exd-panel-root *::after { box-sizing: border-box; }
+
+[data-theme="dark"] #exd-panel-root,
+[data-theme="dark"] .exd-fab,
+[data-theme="dark"] .exd-topbar-btn,
+[data-theme="dark"] .exd-toast,
+[data-theme="dark"] .exd-pick-hint {
+  --exd-canvas: #1F1E1B;
+  --exd-card: #262521;
+  --exd-ink: #E8E6E3;
+  --exd-muted: #9B968C;
+  --exd-line: #37352F;
+  --exd-line-soft: rgba(255, 255, 255, 0.07);
+  --exd-hover: #2D2B27;
+  --exd-alarm-bg: #3A2422;
+  --exd-alarm-ink: #E8A9A4;
+  --exd-tag-auto-bg: #1E2F3A;
+  --exd-tag-auto-ink: #86BEE3;
+  --exd-tag-rule-bg: #37301F;
+  --exd-tag-rule-ink: #D9B36A;
+  --exd-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --exd-shadow-float: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+/* --- 상단 바 버튼 (앱 기본 규격: 32px, 아이콘 15px) --- */
+.exd-topbar-btn {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.exd-topbar-btn:active { transform: scale(0.96); }
+.exd-topbar-btn svg { width: 15px; height: 15px; }
+/* 서랍 기본 모양: ⋯ 옆(is-chat-dock)에 설 때는 ⋯의 네이티브 클래스를 빌려 쓰므로 여기서 덮어쓰지 않는다 */
+.exd-topbar-btn:not(.is-chat-dock) {
+  width: 2rem; height: 2rem; padding: 0;
+  border: 0; border-radius: 0.5rem;
+  background: transparent;
+  color: var(--muted-foreground, var(--exd-muted));
+}
+.exd-topbar-btn:not(.is-chat-dock):hover { background: var(--accent, var(--exd-hover)); color: var(--foreground, var(--exd-ink)); }
+@media (max-width: 640px) { .exd-topbar-btn:not(.is-chat-dock) { width: 1.75rem; height: 1.75rem; } }
+/* 모바일 확장의 ∨ 옆에 설 때만 누르기 쉽게 조금 키운다 */
+.exd-topbar-btn.is-mobile-dock { width: 2.25rem; height: 2.25rem; margin-left: 2px; }
+.exd-topbar-btn.is-mobile-dock svg { width: 18px; height: 18px; }
+/* 상단 바가 숨겨진 채팅방(모바일 확장)에서 ⋯ 버튼 옆에 설 때: 크기·배경·테두리는 빌린 네이티브 클래스가 담당 */
+.exd-topbar-btn.is-chat-dock { margin-right: 2px; color: var(--marinara-chat-chrome-button-text, inherit); }
+.exd-topbar-btn.is-chat-dock:hover { color: var(--marinara-chat-chrome-button-text-hover, inherit); }
+
+/* --- 플로팅 버튼: 기본은 원, 가장자리에 붙이면 반원 탭 --- */
+.exd-fab {
+  position: fixed; z-index: 158;
+  width: 46px; height: 46px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--exd-line); border-radius: 50%;
+  background: var(--exd-card); color: var(--exd-ink);
+  box-shadow: var(--exd-shadow-float);
+  cursor: grab; touch-action: none;
+  transition: border-radius 0.22s cubic-bezier(0.16, 1, 0.3, 1), width 0.22s cubic-bezier(0.16, 1, 0.3, 1), height 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.exd-fab:active { cursor: grabbing; }
+.exd-fab-icon { display: flex; }
+.exd-fab svg { width: 20px; height: 20px; }
+
+.exd-fab.exd-dock-left   { width: 34px; height: 54px; border-radius: 0 27px 27px 0; border-left: 0; }
+.exd-fab.exd-dock-right  { width: 34px; height: 54px; border-radius: 27px 0 0 27px; border-right: 0; }
+.exd-fab.exd-dock-top    { width: 54px; height: 34px; border-radius: 0 0 27px 27px; border-top: 0; }
+.exd-fab.exd-dock-bottom { width: 54px; height: 34px; border-radius: 27px 27px 0 0; border-bottom: 0; }
+.exd-fab.exd-dock-left svg, .exd-fab.exd-dock-right svg,
+.exd-fab.exd-dock-top svg, .exd-fab.exd-dock-bottom svg { width: 17px; height: 17px; }
+
+/* --- 알람 배지 (파스텔 필) --- */
+.exd-badge {
+  position: absolute; top: -5px; right: -4px;
+  min-width: 17px; height: 17px; padding: 0 5px;
+  border-radius: 999px;
+  background: var(--exd-alarm-bg); color: var(--exd-alarm-ink);
+  border: 1px solid var(--exd-line-soft);
+  font-style: normal; font-size: 9.5px; font-weight: 700; line-height: 15px;
+  font-family: var(--exd-mono);
+  text-align: center;
+}
+.exd-badge[hidden] { display: none !important; }
+.exd-fab.exd-dock-right .exd-badge { right: auto; left: -4px; }
+.exd-fab.exd-dock-bottom .exd-badge { top: -7px; }
+
+/* --- 패널 --- */
+#exd-panel-root {
+  position: fixed; z-index: 166;
+  display: flex; flex-direction: column;
+  max-height: min(72vh, 560px);
+  border: 1px solid var(--exd-line); border-radius: 12px;
+  background: var(--exd-canvas);
+  box-shadow: var(--exd-shadow-float);
+  overflow: hidden;
+}
+#exd-panel-root[hidden] { display: none !important; }
+#exd-panel-root.is-anim { animation: exd-panel-in 0.28s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes exd-panel-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.exd-head {
+  display: flex; align-items: center; gap: 6px;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--exd-line);
+  background: var(--exd-canvas);
+}
+.exd-head-title {
+  font-family: var(--exd-serif);
+  font-size: 15px; font-weight: 600; letter-spacing: -0.01em;
+}
+.exd-head-spacer { flex: 1; }
+
+.exd-icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; padding: 0;
+  border: 0; border-radius: 6px;
+  background: transparent; color: var(--exd-muted); cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.exd-icon-btn:hover { background: var(--exd-hover); color: var(--exd-ink); }
+.exd-icon-btn:active { transform: scale(0.94); }
+.exd-icon-btn svg { width: 14px; height: 14px; }
+.exd-icon-btn[hidden] { display: none !important; }
+
+/* --- 아이콘 그리드 (통일 타일 + 이름) --- */
+.exd-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(62px, 1fr));
+  gap: 10px 6px;
+  padding: 14px;
+  overflow-y: auto;
+}
+.exd-items[hidden] { display: none !important; }
+
+.exd-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  min-width: 0;
+  animation: exd-cell-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+@keyframes exd-cell-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.exd-tile {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 46px; height: 46px; padding: 0;
+  border: 1px solid var(--exd-line); border-radius: 10px;
+  background: var(--exd-card); color: var(--exd-ink);
+  cursor: pointer;
+  box-shadow: none;
+  transition: box-shadow 0.2s, transform 0.15s, border-color 0.2s;
+}
+.exd-tile:hover { box-shadow: var(--exd-shadow-soft); border-color: var(--exd-line-soft); transform: translateY(-1px); }
+.exd-tile:active { transform: scale(0.96); }
+
+.exd-tile-icon { display: flex; align-items: center; justify-content: center; }
+.exd-tile-icon svg { width: 19px; height: 19px; max-width: 19px; max-height: 19px; }
+.exd-tile-icon img { width: 22px; height: 22px; object-fit: contain; border-radius: 5px; }
+.exd-tile-letter {
+  font-family: var(--exd-serif);
+  font-size: 17px; font-weight: 600; line-height: 1;
+  color: var(--exd-muted);
+}
+
+.exd-tile-alarm {
+  position: absolute; top: -6px; right: -6px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 999px;
+  background: var(--exd-alarm-bg); color: var(--exd-alarm-ink);
+  border: 1px solid var(--exd-line-soft);
+  font-size: 9px; font-weight: 700; line-height: 14px;
+  font-family: var(--exd-mono);
+  text-align: center;
+}
+.exd-tile-alarm[hidden] { display: none !important; }
+
+.exd-cell-label {
+  max-width: 100%;
+  font-size: 10px; line-height: 1.3;
+  color: var(--exd-muted);
+  text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* 소유 확장이 애드온에서 삭제/비활성화된 아이콘은 그리드에서 숨김.
+   설정 목록에는 "애드온에 없음"으로 남아 있어 완전히 지울 수 있다 */
+.exd-cell.is-away { display: none; }
+
+.exd-empty {
+  margin: 0; padding: 22px 18px 26px;
+  font-size: 12px; line-height: 1.8; text-align: center;
+  color: var(--exd-muted);
+}
+.exd-empty[hidden] { display: none !important; }
+
+/* --- 설정 화면 --- */
+.exd-settings { padding: 12px 14px 16px; overflow-y: auto; font-size: 12.5px; line-height: 1.6; }
+.exd-settings[hidden] { display: none !important; }
+.exd-settings section { margin-bottom: 16px; }
+.exd-settings section:last-child { margin-bottom: 4px; }
+.exd-settings h4 {
+  margin: 0 0 8px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--exd-muted);
+}
+.exd-count {
+  display: inline-block; margin-left: 2px; padding: 0 6px;
+  border-radius: 999px;
+  background: var(--exd-hover); color: var(--exd-muted);
+  font-family: var(--exd-mono); font-size: 9.5px; line-height: 15px;
+}
+
+.exd-choice { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; }
+.exd-choice input { accent-color: var(--exd-alarm-ink); margin: 0; }
+.exd-choice-row { display: flex; align-items: center; gap: 20px; }
+.exd-note-inline { color: var(--exd-muted); font-size: 10.5px; }
+.exd-note-sub { margin: 2px 0 0 24px; color: var(--exd-muted); font-size: 11px; line-height: 1.5; }
+
+.exd-btn {
+  margin-top: 8px; padding: 6px 14px;
+  border: 0; border-radius: 6px;
+  background: var(--exd-ink); color: var(--exd-canvas);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.exd-btn:hover { opacity: 0.85; }
+.exd-btn:active { transform: scale(0.98); }
+
+.exd-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--exd-line);
+}
+.exd-row:last-child { border-bottom: 0; }
+.exd-row-tag {
+  flex: none; padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+}
+.exd-row-tag.is-auto { background: var(--exd-tag-auto-bg); color: var(--exd-tag-auto-ink); }
+.exd-row-tag.is-rule { background: var(--exd-tag-rule-bg); color: var(--exd-tag-rule-ink); }
+.exd-row-name {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.exd-row.is-muted .exd-row-name { color: var(--exd-muted); font-family: var(--exd-mono); font-size: 10.5px; }
+.exd-row-away { color: var(--exd-alarm-ink); font-style: normal; font-size: 10px; font-weight: 600; }
+.exd-row-actions { display: flex; align-items: center; gap: 3px; flex: none; }
+
+.exd-mini {
+  display: flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; padding: 0;
+  border: 1px solid var(--exd-line); border-radius: 5px;
+  background: var(--exd-card); color: var(--exd-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.exd-mini:hover:not(:disabled) { background: var(--exd-hover); color: var(--exd-ink); }
+.exd-mini:disabled { opacity: 0.3; cursor: default; }
+.exd-mini svg { width: 12px; height: 12px; }
+.exd-mini-text { width: auto; padding: 0 8px; font-size: 10.5px; font-weight: 600; }
+.exd-note { margin: 0; color: var(--exd-muted); }
+
+/* --- 토스트 / 픽 모드 --- */
+.exd-toast {
+  position: fixed; left: 50%; bottom: 30px; z-index: 2147483000;
+  transform: translate(-50%, 12px); opacity: 0; pointer-events: none;
+  padding: 9px 18px; border-radius: 8px;
+  background: var(--exd-ink); color: var(--exd-canvas);
+  font-size: 12px; font-weight: 500;
+  box-shadow: var(--exd-shadow-float);
+  transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: min(86vw, 520px); text-align: center;
+}
+.exd-toast.is-show { opacity: 1; transform: translate(-50%, 0); }
+.exd-toast.is-error { background: var(--exd-alarm-ink); color: #FFF; }
+
+.exd-pick-hint {
+  position: fixed; left: 50%; top: 18px; z-index: 2147483001;
+  transform: translateX(-50%);
+  padding: 8px 18px; border-radius: 8px;
+  background: var(--exd-ink); color: var(--exd-canvas);
+  font-size: 12.5px; font-weight: 600;
+  pointer-events: none;
+  box-shadow: var(--exd-shadow-float);
+}
+.exd-pick-highlight {
+  position: fixed; z-index: 2147483000;
+  border: 2px solid var(--exd-alarm-ink);
+  border-radius: 10px;
+  background: var(--exd-alarm-bg);
+  opacity: 0.55;
+  pointer-events: none;
+  transition: all 0.08s;
+}

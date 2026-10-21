@@ -1,0 +1,5 @@
+# 작업 메모·압축본은 깃헙에 올리지 않음
+과제*.md
+*.zip
+.DS_Store
+Thumbs.db

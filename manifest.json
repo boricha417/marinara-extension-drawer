@@ -1,0 +1,12 @@
+{
+  "kind": "marinara.extension",
+  "version": 1,
+  "config": {
+    "name": "확장 서랍",
+    "version": "1.4.0",
+    "description": "다른 확장들이 화면 곳곳에 띄우는 런처 아이콘을 한 곳에 모아주는 서랍입니다. 상단 메뉴 통합 모드와 자유 위치 플로팅 모드를 지원하며, 새로 설치되는 확장의 아이콘도 자동 감지하거나 직접 담을 수 있습니다.",
+    "enabled": true,
+    "cssPath": "extension.css",
+    "jsPath": "extension.js"
+  }
+}
