@@ -141,17 +141,30 @@
     try { return el.shadowRoot.querySelector(selector); } catch { return null; }
   }
 
+  const launcherSized = (r) => r.width >= 14 && r.height >= 14 && r.width <= 170 && r.height <= 170;
+
   // 보이는 상태의 섀도 호스트 안에서 떠 있는 작은 런처 버튼을 찾는다
   function shadowLauncherOf(el) {
     if (!el.shadowRoot) return null;
     try {
-      for (const child of el.shadowRoot.querySelectorAll("button, a, [role='button']")) {
+      const buttons = el.shadowRoot.querySelectorAll("button, a, [role='button']");
+      for (const child of buttons) {
         if (child.dataset.exdHidden !== undefined) return child; // 우리가 숨겨 둔 런처는 그대로 런처로 본다
+      }
+      // 버튼이 아니라 호스트 쪽이 떠 있는 확장도 있다(이면 SIDE B의 #side-b-launcher-root: 호스트가 fixed,
+      // 안쪽 버튼은 흐름 안). 호스트가 런처 크기로 떠 있으면 안쪽 버튼은 떠 있지 않아도 런처로 본다.
+      // 크기 제한이 있어서, 화면을 덮는 실행 화면 호스트(버튼이 잔뜩 든 패널)는 여기에 걸리지 않는다.
+      let hostFloats = false;
+      const hostStyle = getComputedStyle(el);
+      if ((hostStyle.position === "fixed" || hostStyle.position === "absolute")
+        && hostStyle.display !== "none" && hostStyle.visibility !== "hidden") {
+        hostFloats = launcherSized(el.getBoundingClientRect());
+      }
+      for (const child of buttons) {
         const cs = getComputedStyle(child);
-        if (cs.position !== "fixed" && cs.position !== "absolute") continue;
+        if (!hostFloats && cs.position !== "fixed" && cs.position !== "absolute") continue;
         if (cs.display === "none" || cs.visibility === "hidden") continue;
-        const r = child.getBoundingClientRect();
-        if (r.width >= 14 && r.height >= 14 && r.width <= 170 && r.height <= 170) return child;
+        if (launcherSized(child.getBoundingClientRect())) return child;
       }
     } catch {}
     return null;
@@ -607,6 +620,25 @@
     updateBadges();
   }
 
+  // 직접 담은 아이콘(규칙)이 이미 맡고 있는 요소인지. 규칙이 요소 자신을 가리키거나 그 안쪽을 가리키면 참.
+  // 섀도 호스트는 규칙이 안쪽 런처에 "숨김" 표식을 붙이는 순간 자동 후보 조건도 채우게 되므로,
+  // 이 확인이 없으면 같은 아이콘이 직접 담은 것과 자동으로 담긴 것 두 개가 된다.
+  function coveredByRule(el) {
+    for (const proxy of proxies.values()) {
+      const live = proxy.live;
+      if (live && (live === el || el.contains(live))) return true;
+    }
+    return false;
+  }
+
+  // 규칙과 겹친 자동 항목을 내려놓는다. 숨김은 규칙 쪽이 계속 맡으므로 원본을 다시 보이게 하지 않는다.
+  function dropAutoDuplicate(entry) {
+    markDirty();
+    entry.cell.remove();
+    entries.delete(entry.el);
+    pendingSince.delete(entry.el);
+  }
+
   // ---------- 직접 담은 아이콘 (항상 서랍에 표시, 원본은 CSS+인라인으로 숨김) ----------
   function findLiveRuleEl(selector) {
     let found = null;
@@ -796,9 +828,17 @@
 
       syncProxies();
 
+      // 직접 담은 아이콘과 같은 요소가 자동으로도 담겨 있으면 자동 쪽을 내려놓는다(예전 판에서 생긴 중복 정리 포함)
+      let droppedDuplicate = false;
+      for (const [el, entry] of Array.from(entries.entries())) {
+        if (coveredByRule(el)) { dropAutoDuplicate(entry); droppedDuplicate = true; }
+      }
+      if (droppedDuplicate) layoutItems();
+
       if (state.autoCollect) {
         for (const el of Array.from(document.body.children)) {
           if (entries.has(el)) continue;
+          if (coveredByRule(el)) { pendingSince.delete(el); continue; } // 직접 담은 아이콘이 이미 맡고 있다
           if (!isAutoCandidate(el)) { pendingSince.delete(el); continue; }
           const first = pendingSince.get(el);
           if (!first) { pendingSince.set(el, now); markDirty(); continue; } // 후보가 생겼으니 활동 간격 유지
@@ -1000,10 +1040,16 @@
     for (const btn of [fab, topbarBtn]) {
       const badge = btn?.querySelector(".exd-badge");
       if (!badge) continue;
-      badge.textContent = String(alarms);
-      badge.hidden = alarms === 0;
+      // 같은 글자라도 다시 쓰면 글자 노드가 새로 끼워져 화면 전체 스타일 재계산을 부를 수 있다 → 바뀔 때만 쓴다
+      const text = String(alarms);
+      if (badge.textContent !== text) badge.textContent = text;
+      const hide = alarms === 0;
+      if (badge.hidden !== hide) badge.hidden = hide;
     }
-    if (emptyMsg) emptyMsg.hidden = settingsView || entries.size + proxies.size !== 0;
+    if (emptyMsg) {
+      const hideEmpty = settingsView || entries.size + proxies.size !== 0;
+      if (emptyMsg.hidden !== hideEmpty) emptyMsg.hidden = hideEmpty;
+    }
   }
 
   // ---------- 패널 ----------
